@@ -21,6 +21,10 @@ export default class TicketService {
     if ((infant > 0 || child > 0) && adult <= 0) {
       throw new EvalError("Child and infant tickets can only be purchased with an adult present")
     }
+
+    if (infant > adult) {
+      throw new EvalError("Infants cannot be more than adults")
+    }
   }
 
   #getQuantity(ticketRequestObj) {
@@ -36,14 +40,17 @@ export default class TicketService {
   }
 
   #validateParams(accountId, ticketTypes) {
-    if (accountId <= 0) {
-      throw new RangeError("Account ID should be greater than zero")
+    if (accountId <= 0 || typeof accountId !== 'number') {
+      throw new RangeError("Account ID should be an integer greater than zero")
     }
 
     if (ticketTypes[0] === undefined || Object.keys(ticketTypes[0]).length === 0) {
       throw new SyntaxError("Ticket type is required")
     }
-    return true;
+
+    if (typeof ticketTypes[0] !== 'object' || Array.isArray(ticketTypes[0])) {
+      throw new SyntaxError("Ticket type should be a non empty object")
+    }
   }
 
   purchaseTickets(accountId, ...ticketTypeRequests) {
@@ -52,6 +59,7 @@ export default class TicketService {
       this.#validateParams(accountId, ticketTypeRequests)
       this.#validateTicketType(ticketTypeRequests)
       let ticketQuantity = this.#getQuantity(ticketTypeRequests)
+      console.log(ticketQuantity)
     } catch (error) {
       throw new InvalidPurchaseException(error.message)
     }
