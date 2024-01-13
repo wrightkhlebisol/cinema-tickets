@@ -6,6 +6,13 @@ export default class TicketService {
    * Should only have private methods other than the one below.
    */
 
+  #validateTicketType(ticketRequestObj) {
+    let { adult, child, infant } = ticketRequestObj[0];
+    if ((infant > 0 || child > 0) && adult <= 0) {
+      throw new EvalError("Child and infant tickets can only be purchased with an adult present")
+    }
+  }
+
   #getQuantity(ticketRequestObj) {
     let ticketsCount = Object.values(ticketRequestObj[0]);
 
@@ -33,6 +40,8 @@ export default class TicketService {
     // throws InvalidPurchaseException
     try {
       this.#validateParams(accountId, ticketTypeRequests)
+      this.#validateTicketType(ticketTypeRequests)
+      let ticketQuantity = this.#getQuantity(ticketTypeRequests)
     } catch (error) {
       throw new InvalidPurchaseException(error.message)
     }
