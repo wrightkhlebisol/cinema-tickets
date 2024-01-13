@@ -5,6 +5,16 @@ export default class TicketService {
   /**
    * Should only have private methods other than the one below.
    */
+  #childPrice = 10.0;
+  #adultPrice = 20.0;
+
+  get childPrice() {
+    return this.#childPrice;
+  }
+
+  get adultPrice() {
+    return this.#adultPrice;
+  }
 
   #validateTicketType(ticketRequestObj) {
     let { adult, child, infant } = ticketRequestObj[0];
