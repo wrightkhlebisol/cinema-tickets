@@ -6,6 +6,17 @@ export default class TicketService {
    * Should only have private methods other than the one below.
    */
 
+  #getQuantity(ticketRequestObj) {
+    let ticketsCount = Object.values(ticketRequestObj[0]);
+
+    let quantity = ticketsCount.reduce((total, eachTypeCount) => {
+      return total + eachTypeCount
+    }, 0)
+    if (quantity < 1 || quantity > 20) {
+      throw new RangeError("Quantity should be between 1 and 20")
+    }
+    return quantity;
+  }
 
   #validateParams(accountId, ticketTypes) {
     if (accountId <= 0) {
