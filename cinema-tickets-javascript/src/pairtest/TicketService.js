@@ -6,8 +6,6 @@ export default class TicketService {
   /**
    * Should only have private methods other than the one below.
    */
-  // #ticketPaymentService;
-  // #seatReservationService;
   #childPrice = 1000;
   #adultPrice = 2000;
 
@@ -29,11 +27,9 @@ export default class TicketService {
 
   purchaseTickets(accountId, ...ticketTypeRequests) {
     // throws InvalidPurchaseException
-    console.log("Somethin top")
     try {
       const ticketTypeObjs = ticketTypeRequests[0]
       this.#validateParams(accountId, ticketTypeObjs);
-      console.log("Somethin validateParams")
 
       const requestQuantityObject = this.#aggregateRequest(ticketTypeObjs)
       this.#validateTicketType(requestQuantityObject);
