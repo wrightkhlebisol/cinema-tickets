@@ -67,5 +67,46 @@ describe('Ticket Service', () => {
                 ticketService.purchaseTickets(1, [new TicketTypeRequest('CHILD', 1), new TicketTypeRequest('INFANT', 2), new TicketTypeRequest('ADULT', 1)])
             ).toThrow(InvalidPurchaseException)
         })
+
+        // HAPPY PATHS
+        test('should be successful for adult, child and infant request', () => {
+            expect(ticketService.purchaseTickets(1, [new TicketTypeRequest('CHILD', 1), new TicketTypeRequest('INFANT', 1), new TicketTypeRequest('ADULT', 1)])).toBeTruthy()
+
+        })
+
+        test('should be successful for adult and child request', () => {
+            expect(ticketService.purchaseTickets(1, [new TicketTypeRequest('CHILD', 1), new TicketTypeRequest('ADULT', 1)])).toBeTruthy()
+
+        })
+
+        test('should be successful for adult and infant request', () => {
+            let response = ticketService.purchaseTickets(1, [new TicketTypeRequest('INFANT', 1), new TicketTypeRequest('ADULT', 1)])
+            expect(response).toBeTruthy()
+            expect(response).toHaveProperty("amount");
+            expect(response).toHaveProperty("quantity");
+            expect(response).toHaveProperty("seats");
+
+        })
+
+        test('should return the correct amount and price for infant and adult request', () => {
+            let { quantity, amount, seats } = ticketService.purchaseTickets(1, [new TicketTypeRequest('INFANT', 1), new TicketTypeRequest('ADULT', 1)])
+            expect(quantity).toEqual(2);
+            expect(amount).toEqual(2000);
+            expect(seats).toEqual(1);
+        })
+
+        test('should return the correct amount and price for child and adult request', () => {
+            let { quantity, amount, seats } = ticketService.purchaseTickets(1, [new TicketTypeRequest('CHILD', 1), new TicketTypeRequest('ADULT', 1)])
+            expect(quantity).toEqual(2);
+            expect(amount).toEqual(3000);
+            expect(seats).toEqual(2);
+        })
+
+        test('should return the correct amount and price for infant, child and adult request', () => {
+            let { quantity, amount, seats } = ticketService.purchaseTickets(1, [new TicketTypeRequest('INFANT', 1), new TicketTypeRequest('CHILD', 1), new TicketTypeRequest('ADULT', 1)])
+            expect(quantity).toEqual(3);
+            expect(amount).toEqual(3000);
+            expect(seats).toEqual(2);
+        })
     })
 })
