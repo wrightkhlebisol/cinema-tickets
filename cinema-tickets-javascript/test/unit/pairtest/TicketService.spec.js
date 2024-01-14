@@ -39,4 +39,33 @@ describe('Ticket Service', () => {
             expect(() => ticketService.purchaseTickets(1, [null])).toThrow("Ticket type should be a non empty object")
         })
     })
+    describe('correct constraints', () => {
+
+        test('should throw when quantity is more than 20', () => {
+            expect(() =>
+                ticketService.purchaseTickets(1, new TicketTypeRequest('ADULT', 21))
+            ).toThrow(InvalidPurchaseException)
+        })
+
+        test('should throw when quantity is less than 1', () => {
+            expect(() =>
+                ticketService.purchaseTickets(1, [new TicketTypeRequest('ADULT', 0), new TicketTypeRequest('INFANT', 0)])
+            ).toThrow(InvalidPurchaseException)
+            expect(() =>
+                ticketService.purchaseTickets(1, [new TicketTypeRequest('ADULT', -1), new TicketTypeRequest('INFANT', -1)])
+            ).toThrow(InvalidPurchaseException)
+        })
+
+        test('should throw when child and infant buys without adult', () => {
+            expect(() =>
+                ticketService.purchaseTickets(1, [new TicketTypeRequest('CHILD', 1), new TicketTypeRequest('INFANT', 1), new TicketTypeRequest('ADULT', 0)])
+            ).toThrow(InvalidPurchaseException)
+        })
+
+        test('should throw when infant is more than adult', () => {
+            expect(() =>
+                ticketService.purchaseTickets(1, [new TicketTypeRequest('CHILD', 1), new TicketTypeRequest('INFANT', 2), new TicketTypeRequest('ADULT', 1)])
+            ).toThrow(InvalidPurchaseException)
+        })
+    })
 })
