@@ -9,6 +9,11 @@ export default class TicketService {
    */
   #childPrice = 10.0;
   #adultPrice = 20.0;
+  #requestQuantityObj = {
+    adult: 0,
+    child: 0,
+    infant: 0
+  };
 
   constructor(
     ticketPaymentService = new TicketPaymentService(),
@@ -30,21 +35,17 @@ export default class TicketService {
     if (accountId <= 0 || typeof accountId !== "number") {
       throw new RangeError("Account ID should be an integer greater than zero");
     }
-
-    if (
-      ticketTypes[0] === undefined ||
-      Object.keys(ticketTypes[0]).length === 0
-    ) {
+    if (!ticketTypes) {
       throw new Error("Ticket type is required");
     }
 
-    if (typeof ticketTypes[0] !== "object" || Array.isArray(ticketTypes[0])) {
+    if (Array.isArray(ticketTypes[0])) {
       throw new TypeError("Ticket type should be a non empty object");
     }
   }
 
   #validateTicketType(ticketRequestObj) {
-    let { adult, child, infant } = ticketRequestObj[0];
+    let { adult, child, infant } = ticketRequestObj;
     if ((infant > 0 || child > 0) && adult <= 0) {
       throw new EvalError(
         "Child and infant tickets can only be purchased with an adult present"
@@ -56,36 +57,55 @@ export default class TicketService {
     }
   }
 
-  #getQuantity(ticketRequestObj) {
-    let ticketsCount = Object.values(ticketRequestObj[0]);
+  #getQuantityAmountAndSeats(ticketRequestObj) {
+    let quantity
 
-    let quantity = ticketsCount.reduce((total, eachTypeCount) => {
-      return total + eachTypeCount;
-    }, 0);
+    if (!Array.isArray(ticketRequestObj)) {
+      let ticketType = ticketRequestObj.getTicketType().toLowerCase()
+      this.#requestQuantityObj[ticketType] = ticketRequestObj.getNoOfTickets();
+      quantity = ticketRequestObj.getNoOfTickets();
+    } else {
+      this.#requestQuantityObj = this.#aggregateRequestQuantity(ticketRequestObj);
+
+      quantity = ticketRequestObj.reduce((total, eachTypeCount) =>
+        total + eachTypeCount.getNoOfTickets(), 0);
+    }
+
+    this.#validateTicketType(this.#requestQuantityObj);
+
     if (quantity < 1 || quantity > 20) {
       throw new RangeError("Quantity should be between 1 and 20");
     }
-    return quantity;
+
+    let amount = (this.#requestQuantityObj['adult'] * this.#adultPrice) + (this.#requestQuantityObj['child'] * this.#childPrice);
+    let seats = this.#requestQuantityObj['adult'] + this.#requestQuantityObj['child'];
+    return { quantity, amount, seats };
   }
 
-  #calcAmountandSeats(ticketRequestObj) {
-    let { adult = 0, child = 0 } = ticketRequestObj[0];
-    let amount = adult * this.#adultPrice + child * this.#childPrice;
-    let seats = adult + child;
-    return { amount, seats };
+  #aggregateRequestQuantity(ticketRequestObj) {
+    ticketRequestObj.forEach(request => {
+      const ticketType = request.getTicketType();
+      if (ticketType === 'ADULT') {
+        this.#requestQuantityObj.adult += request.getNoOfTickets();
+      } else if (ticketType === 'CHILD') {
+        this.#requestQuantityObj.child += request.getNoOfTickets();
+      } else {
+        this.#requestQuantityObj.infant += request.getNoOfTickets();
+      }
+    });
+    return this.#requestQuantityObj;
   }
 
   purchaseTickets(accountId, ...ticketTypeRequests) {
     // throws InvalidPurchaseException
     try {
-      this.#validateParams(accountId, ticketTypeRequests);
-      this.#validateTicketType(ticketTypeRequests);
-      let ticketQuantity = this.#getQuantity(ticketTypeRequests);
-      let { amount, seats } = this.#calcAmountandSeats(ticketTypeRequests);
+      this.#validateParams(accountId, ticketTypeRequests[0]);
+      let { quantity, amount, seats } = this.#getQuantityAmountAndSeats(ticketTypeRequests[0]);
+
       // Make payment request first then seatreservation request
       this.ticketPaymentService.makePayment(accountId, amount);
       this.seatReservationService.reserveSeat(accountId, seats);
-      return { ticketQuantity, amount, seats };
+      return { quantity, amount, seats };
     } catch (error) {
       throw new InvalidPurchaseException(error.message);
     }
