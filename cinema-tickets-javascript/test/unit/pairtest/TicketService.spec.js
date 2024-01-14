@@ -14,7 +14,7 @@ describe('Ticket Service', () => {
 
     describe('Test Validations', () => {
 
-        test('it throws when userId and request are undefined', () => {
+        test('should throw when userId and request are undefined', () => {
             expect(() => ticketService.purchaseTickets()).toThrow()
             expect(() => ticketService.purchaseTickets()).toThrow(InvalidPurchaseException);
             expect(() => ticketService.purchaseTickets()).toThrow("Account ID should be an integer greater than zero")
@@ -109,4 +109,43 @@ describe('Ticket Service', () => {
             expect(seats).toEqual(2);
         })
     })
+})
+
+describe("External service", () => {
+    test("should be called when ticket service does not throw", () => {
+        // let ticketPaymentService = new TicketPaymentService();
+        const ticketPaymentService = { makePayment: (accountId, amount) => { } }
+        const seatReservationService = { reserveSeat: (accountId, totalSeatsToAllocate) => { } };
+
+        jest.spyOn(ticketPaymentService, 'makePayment')
+        jest.spyOn(seatReservationService, 'reserveSeat')
+
+        let ticketService = new TicketService(
+            ticketPaymentService,
+            seatReservationService,
+        );
+
+        ticketService.purchaseTickets(5, [new TicketTypeRequest('ADULT', 1)])
+
+        expect(ticketPaymentService.makePayment).toBeCalledWith(5, 2000);
+    });
+
+    test("should not be called when ticket service throws", () => {
+        const ticketPaymentService = { makePayment: (accountId, amount) => { } }
+        const seatReservationService = { reserveSeat: (accountId, totalSeatsToAllocate) => { } };
+
+        jest.spyOn(ticketPaymentService, 'makePayment')
+        jest.spyOn(seatReservationService, 'reserveSeat')
+
+        let ticketService = new TicketService(
+            ticketPaymentService,
+            seatReservationService,
+        );
+
+        expect(() => ticketService.purchaseTickets(5, [new TicketTypeRequest('ADULT', 0), new TicketTypeRequest('INFANT', 1)])).toThrow()
+
+        expect(ticketPaymentService.makePayment).not.toBeCalled();
+        expect(seatReservationService.reserveSeat).not.toBeCalled();
+
+    });
 })
