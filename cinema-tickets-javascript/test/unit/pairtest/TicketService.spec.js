@@ -1,8 +1,6 @@
 import TicketService from "../../../src/pairtest/TicketService.js";
 import InvalidPurchaseException from '../../../src/pairtest/lib/InvalidPurchaseException.js';
 import TicketTypeRequest from "../../../src/pairtest/lib/TicketTypeRequest.js";
-import TicketPaymentService from "../../../src/thirdparty/paymentgateway/TicketPaymentService.js";
-import SeatReservationService from "../../../src/thirdparty/seatbooking/SeatReservationService.js";
 
 
 describe('Ticket Service', () => {
