@@ -14,7 +14,12 @@ The project includes comprehensive unit tests covering all possible paths, inclu
 
 Mocks have been incorporated for third-party requests to simulate success or failure scenarios.
 
-## HOW TO RUN
+To run the tests: ```npm test```
+
+
+## HOW TO RUN THE APP
+
+### WITHOUT DOCKER
 To run the application, ensure you have Node.js installed (version >= 16). 
 Follow these steps:
 
@@ -22,7 +27,14 @@ Follow these steps:
 2. Run tests: ```npm test```
 3. Execute the ```index.js``` script in the root folder, providing the required ID and ticket types as parameters.
 
-NOTE: The ```TicketTypeRequest``` class specifies the type of ticket request passed to ```TicketService.purchaseTickets```
+**NOTE**: The ```TicketTypeRequest``` class specifies the type of ticket request passed to ```TicketService.purchaseTickets```
 
-## SUGGESTIONS IMPROVEMENTS
+### WITH DOCKER
+The project comes configured with a ```Dockerfile``` and ```compose``` file at the root, they've been configured for use with the required Node version.
+
+- First Time build, in the terminal run ```docker compose up --build```
+- Subsequently, run ```docker compose up``` to start the docker image
+
+
+## SUGGESTIONS
 - To ensure a consistent interface when calling ```purchaseTickets```, I'd enforce that the request only take an array of ```TicketTypeRequest```. In this implementation I have made it abit loose enough to take a single object or an array of objects.
